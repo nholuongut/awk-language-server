@@ -1,0 +1,31 @@
+name: tests
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: true
+      matrix:
+        # windows-latest is broken due to some security patches
+        # https://github.com/prebuild/node-gyp-build/issues/68
+        os: [ubuntu-latest, macOS-latest]
+        node: [20, 21]
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: yarn
+          cache-dependency-path: '**/yarn.lock'
+      - run: yarn install --frozen-lockfile
+      - run: yarn test:ci
